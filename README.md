@@ -17,7 +17,7 @@ Provides a .NET Source Generator which aims to simplify the process of [forwardi
 - Ignores members starting with `set_`/`get_` as they are typically lowered getters/setters
 
 ## Usage
-- add an analyzer reference to your csproj file:
+- add an analyzer reference to the csproj file or dll:
 ```xml
   <ItemGroup>
     <ProjectReference Include="..\Barion.Forwarding\Barion.Forwarding.csproj"
