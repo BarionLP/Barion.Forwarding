@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ametrin.Forwarding", "Ametrin.Forwarding\Ametrin.Forwarding.csproj", "{DE609F58-7C03-40A7-B5A1-1E7128831269}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Barion.Forwarding", "Barion.Forwarding\Barion.Forwarding.csproj", "{DE609F58-7C03-40A7-B5A1-1E7128831269}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ametrin.Forwarding.Test", "Ametrin.Forwarding.Test\Ametrin.Forwarding.Test.csproj", "{358CFD33-A152-4F90-829F-150B3B1096DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Barion.Forwarding.Test", "Barion.Forwarding.Test\Barion.Forwarding.Test.csproj", "{358CFD33-A152-4F90-829F-150B3B1096DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
