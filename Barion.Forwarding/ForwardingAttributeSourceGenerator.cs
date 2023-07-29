@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace ForwardingSourceGenerator;
+namespace Barion.Forwarding;
 
 //[Generator]
 //internal sealed class ForwardingAttributeSourceGenerator : ISourceGenerator {

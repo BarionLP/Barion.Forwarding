@@ -1,9 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Text;
 using System.Collections.Generic;
-using Ametrin.Forwarding;
 
-namespace Ametrin.SourceGeneration; 
+namespace Barion.SourceGeneration; 
 public sealed class MethodBuilder {
     private string Accessibility = "private";
     private readonly string ReturnType = "void";

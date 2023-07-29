@@ -1,9 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
-namespace Ametrin.SourceGeneration; 
+namespace Barion.SourceGeneration; 
 
 public static class SymbolExtensions {
     public static string GetKindString(this ITypeSymbol typeSymbol) {

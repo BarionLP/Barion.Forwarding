@@ -1,9 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
-using System;
 using System.Linq;
 using System.Text;
 
-namespace Ametrin.SourceGeneration; 
+namespace Barion.SourceGeneration; 
 public sealed class ClassBuilder {
     private readonly StringBuilder StringBuilder = new();
     public readonly string Name;
