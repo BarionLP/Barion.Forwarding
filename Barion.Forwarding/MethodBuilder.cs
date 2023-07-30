@@ -9,6 +9,7 @@ public sealed class MethodBuilder {
     private readonly string Name;
     private bool IsStatic = false;
     private bool IsVirtual = false;
+    private bool IsOverride = false;
     private readonly List<string> Parameters = new();
     private readonly List<string> GenericParameters = new();
     private readonly StringBuilder MethodBodyBuilder = new();
@@ -22,7 +23,7 @@ public sealed class MethodBuilder {
         : this(methodSymbol.Name, methodSymbol.GetReturnString()){
         SetAccessibility(methodSymbol.DeclaredAccessibility);
         if(methodSymbol.IsStatic) SetStatic();
-        if(methodSymbol.IsVirtual) SetVirtual();
+        //if(methodSymbol.IsVirtual) SetVirtual(); // not a good idea to set it automatically
     }
 
     public MethodBuilder SetStatic() {
@@ -32,6 +33,11 @@ public sealed class MethodBuilder {
     
     public MethodBuilder SetVirtual() {
         IsVirtual = true;
+        return this;
+    }
+    
+    public MethodBuilder SetOverride() {
+        IsOverride = true;
         return this;
     }
 
@@ -57,8 +63,21 @@ public sealed class MethodBuilder {
         return AddParameter(parameterSymbol.Type.GetCodeString(), parameterSymbol.Name);
     }
 
+    public MethodBuilder AddParameters(IEnumerable<IParameterSymbol> parameterSymbols) {
+        foreach(var parameterSymbol in parameterSymbols) {
+            AddParameter(parameterSymbol);
+        }
+        return this;
+    }
+
     public MethodBuilder AddGenericParameter(ITypeSymbol parameterSymbol) {
         GenericParameters.Add(parameterSymbol.ToDisplayString());
+        return this;
+    }
+    public MethodBuilder AddGenericParameters(IEnumerable<ITypeSymbol> parameterSymbols) {
+        foreach(var parameterSymbol in parameterSymbols) {
+            AddGenericParameter(parameterSymbol);
+        }
         return this;
     }
 
@@ -89,8 +108,12 @@ public sealed class MethodBuilder {
     public override string ToString() {
         var builder = new StringBuilder();
         builder.Append(Accessibility);
-        if(IsStatic) builder.Append(" static");
-        if(IsVirtual) builder.Append(" virtual");
+        if(IsOverride) {
+            builder.Append(" override");
+        } else {
+            if(IsStatic) builder.Append(" static");
+            if(IsVirtual) builder.Append(" virtual");
+        }
         builder.Append($" {ReturnType} {Name}");
         if(GenericParameters.Count > 0) {
             builder.Append($"<{string.Join(", ", GenericParameters)}>");

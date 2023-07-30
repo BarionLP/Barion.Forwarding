@@ -26,38 +26,37 @@ public sealed class ClassBuilder {
         return this;
     }
 
-    public ClassBuilder Forward(ISymbol forward, ISymbol from) {
-        //if(from is not IFieldSymbol or IPropertySymbol) throw new InvalidOperationException();
-        //if(forward is not IFieldSymbol or IPropertySymbol or IMethodSymbol) throw new InvalidOperationException();
-        if(forward is IMethodSymbol methodSymbol) ForwardMethod(methodSymbol, from);
-        else if(forward is IPropertySymbol propertySymbol) ForwardProperty(propertySymbol, from);
-        return this;
-    }
-
-    private ClassBuilder ForwardMethod(IMethodSymbol forward, ISymbol from) {
+    public ClassBuilder ForwardMethod(IMethodSymbol forward, ISymbol from, bool shouldOverride = false) {
         var builder = new MethodBuilder(forward);
 
-        foreach(var parameter in forward.Parameters) {
-            builder.AddParameter(parameter);
-        }
-        
-        foreach(var parameter in forward.TypeParameters) {
-            builder.AddGenericParameter(parameter);
-        }
+        if(shouldOverride) builder.SetOverride();
+        if(forward.Parameters.Length > 0) builder.AddParameters(forward.Parameters);
+        if(forward.TypeParameters.Length > 0) builder.AddGenericParameters(forward.TypeParameters);
 
         var result = forward.ReturnsVoid ? builder.AddCall(forward, from, forward.Parameters.Select(parameter => parameter.Name)).ToString() : builder.ReturnCall(forward, from, forward.Parameters.Select(parameter => parameter.Name));
 
-        StringBuilder.AppendLine($"\t{result.Replace("\n", "\n\t")}");
-
-        return this;
+        return Add(result);
     }
 
-    private ClassBuilder ForwardProperty(IPropertySymbol forward, ISymbol from) {
+    public ClassBuilder ForwardProperty(IPropertySymbol forward, ISymbol from, bool includeSetter = false, bool shouldOverride = false) {
         if(forward.IsIndexer) {
-
-        } else {
-            StringBuilder.AppendLine($"\t{forward.DeclaredAccessibility.ToKeyword()} {forward.Type.GetCodeString()} {forward.Name} => {from.Name}.{forward.Name};");
+            return Add("//Indexers not yet supported");
+        } 
+        if(includeSetter && forward.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal) {
+            return Add($$"""
+                        {{forward.DeclaredAccessibility.ToKeyword()}} {{(shouldOverride ? "override " : string.Empty)}}{{forward.Type.GetCodeString()}} {{forward.Name}} {
+                            get => {{from.Name}}.{{forward.Name}};
+                            set => {{from.Name}}.{{forward.Name}} = value;
+                        }
+                        """);
         }
+            
+        return Add($"{forward.DeclaredAccessibility.ToKeyword()} {(shouldOverride ? "override " : string.Empty)}{forward.Type.GetCodeString()} {forward.Name} => {from.Name}.{forward.Name};");
+    }
+
+    public ClassBuilder Add(string code) {
+        StringBuilder.Append('\t');
+        StringBuilder.AppendLine(code.Replace("\n", "\n\t"));
         return this;
     }
 

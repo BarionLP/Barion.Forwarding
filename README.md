@@ -5,16 +5,18 @@ Provides a .NET Source Generator which aims to simplify the process of [forwardi
 
 ### Features
 - forwards calls to methods
-- forwards getter of properties
-- includes inherited members (not from `System.Object`)
+- forwards properties (optionally including setters)
+- includes inherited members
+- adds overrides if neccessary
 
 ### Limitations
 - No static members
-- No setter of properties 
+- No indexers
 - No constructors
-- May encounter difficulties with generics
+- Ignores `required` keywords
 - Always forwards all method overloads
-- Ignores members starting with `set_`/`get_` as they are typically lowered getters/setters
+- May encounter difficulties with generics
+- Ignores methods starting with `set_`/`get_` as they are typically lowered getters/setters
 
 ## Usage
 - add an analyzer reference to the csproj file or dll:
@@ -26,25 +28,39 @@ Provides a .NET Source Generator which aims to simplify the process of [forwardi
   </ItemGroup>
 ```
 - (optional) set `<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>` the generator saves the files in `{BaseIntermediateOutpath}/generated` (e.g. `obj/Debug/net7.0/generated`)
-- copy the `ForwardAttribute.cs` and `ForwardingAttribute.cs` files into your project
+- copy the `ForwardingAttributes.cs` file into your project
 - you might have to restart your IDE for intellisense to recognize the generated files
+- check the generated files for comments in case members do not get forwarded correctly 
 
 ## Examples
 ```csharp
 [Forwarding] //signal for the source generator
 public partial class A { // needs to be partial
-    [Forward] private B b1; // forwards every property (as readonly) or method on B
+  // forwards every property (getter only) and method on B
+  [Forward] private B b1;
 }
 ```
 
 ```csharp
 [Forwarding]
 public partial class A {
-    [Forward("Foo", "Bar")] // forwards Foo and Bar from B
-    private B b1;
+  // forwards Foo and Bar from B
+  [Forward("Foo", "Bar")] private B b1;
+  
+  [Forward(nameof(B.Foo), nameof(B.Bar))] // better practice
+   private B b2 {get; set;} // works for properties too
+}
+```
+if you  want more controll use the `ForwardMethodsAttribute` and `ForwardPropertiesAttribute`
+```csharp
+[Forwarding]
+public partial class A {
+  // forwards methods named Foo from B
+  [ForwardMethods(nameof(B.Foo))] private B b1;
     
-    [Forward(nameof(B.Foo), nameof(B.Bar))] // better practice
-    private B b2 {get; set;} // works for properties too
+  // forwards the Bar property from B including it's setter
+  [ForwardProperties(true, nameof(B.Bar))] 
+  private B b2 {get; set;}
 }
 ```
 
