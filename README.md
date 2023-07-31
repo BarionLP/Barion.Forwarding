@@ -10,7 +10,6 @@ Provides a .NET Source Generator which aims to simplify the process of [forwardi
 - adds overrides if neccessary
 
 ### Limitations
-- No static members
 - No indexers
 - No constructors
 - Ignores `required` keywords

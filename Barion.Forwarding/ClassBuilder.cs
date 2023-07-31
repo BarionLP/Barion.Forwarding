@@ -39,7 +39,7 @@ public sealed class ClassBuilder {
         return Add(result);
     }
 
-    public ClassBuilder ForwardProperty(IPropertySymbol forward, ISymbol from, bool includeSetter = false, bool shouldOverride = false, bool isStatic = false) {        
+    public ClassBuilder ForwardProperty(IPropertySymbol forward, ISymbol from, bool includeSetter = false, bool shouldOverride = false) {      
         if(forward.IsIndexer) {
             return Add("//Indexers not yet supported");
         } 
