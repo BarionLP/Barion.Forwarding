@@ -29,6 +29,7 @@ public sealed class ClassBuilder {
     public ClassBuilder ForwardMethod(IMethodSymbol forward, ISymbol from, bool shouldOverride = false) {
         var builder = new MethodBuilder(forward);
 
+        if(from.IsStatic) builder.SetStatic();
         if(shouldOverride) builder.SetOverride();
         if(forward.Parameters.Length > 0) builder.AddParameters(forward.Parameters);
         if(forward.TypeParameters.Length > 0) builder.AddGenericParameters(forward.TypeParameters);
@@ -38,20 +39,20 @@ public sealed class ClassBuilder {
         return Add(result);
     }
 
-    public ClassBuilder ForwardProperty(IPropertySymbol forward, ISymbol from, bool includeSetter = false, bool shouldOverride = false) {
+    public ClassBuilder ForwardProperty(IPropertySymbol forward, ISymbol from, bool includeSetter = false, bool shouldOverride = false, bool isStatic = false) {        
         if(forward.IsIndexer) {
             return Add("//Indexers not yet supported");
         } 
         if(includeSetter && forward.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal) {
             return Add($$"""
-                        {{forward.DeclaredAccessibility.ToKeyword()}} {{(shouldOverride ? "override " : string.Empty)}}{{forward.Type.GetCodeString()}} {{forward.Name}} {
+                        {{forward.DeclaredAccessibility.ToKeyword()}} {{(from.IsStatic ? "static " : string.Empty)}}{{(shouldOverride ? "override " : string.Empty)}}{{forward.Type.GetCodeString()}} {{forward.Name}} {
                             get => {{from.Name}}.{{forward.Name}};
                             set => {{from.Name}}.{{forward.Name}} = value;
                         }
                         """);
         }
             
-        return Add($"{forward.DeclaredAccessibility.ToKeyword()} {(shouldOverride ? "override " : string.Empty)}{forward.Type.GetCodeString()} {forward.Name} => {from.Name}.{forward.Name};");
+        return Add($"{forward.DeclaredAccessibility.ToKeyword()} {(from.IsStatic ? "static " : string.Empty)}{(shouldOverride ? "override " : string.Empty)}{forward.Type.GetCodeString()} {forward.Name} => {from.Name}.{forward.Name};");
     }
 
     public ClassBuilder Add(string code) {

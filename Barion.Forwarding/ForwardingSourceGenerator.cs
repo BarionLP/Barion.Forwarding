@@ -91,6 +91,10 @@ internal sealed class ForwardingSourceGenerator : ISourceGenerator {
 
                         if(forwarded.Any(other => methodSymbol.Name == other.Name && methodSymbol.MatchParameters(other) && methodSymbol.ReturnType.Equals(other.ReturnType, SymbolEqualityComparer.Default))) continue;
 
+                        if(shouldOverride && classMemberSymbol.IsStatic) {
+                            shouldOverride = false;
+                        }
+
                         if(shouldOverride && ignoredSymbol is not IMethodSymbol) {
                             builder.Add($"//cannot override because base.{ignoredSymbol!.Name} is not a method");
                             shouldOverride = false;
@@ -116,6 +120,10 @@ internal sealed class ForwardingSourceGenerator : ISourceGenerator {
                     foreach(var propertySymbol in propertySymbols) {
                         var mightIgnoreMember = classSubMembers.FirstOrDefault(symbol => symbol.Name == propertySymbol.Name);
                         var shouldOverride = mightIgnoreMember is not null;
+
+                        if(shouldOverride && classMemberSymbol.IsStatic) {
+                            shouldOverride = false;
+                        }
 
                         if(shouldOverride && mightIgnoreMember is not IPropertySymbol) {
                             builder.Add($"//cannot override because base.{mightIgnoreMember!.Name} is not a property");

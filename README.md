@@ -68,5 +68,5 @@ public partial class A {
 Feel free to fork this project and submit a pull request. Your contributions will be highly appreciated.
 
 ## Notes
-- please link back this repo
+- please link back to this repo
 - GPT-4 was used in the creation of this project
