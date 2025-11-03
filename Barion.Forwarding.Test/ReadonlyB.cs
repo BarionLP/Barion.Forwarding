@@ -1,7 +1,8 @@
 ﻿namespace Barion.Forwarding.Test;
 
 [Forwarding]
-internal sealed partial class ReadonlyB {
+internal sealed partial class ReadonlyB
+{
     [Forward]
-    private B _Inner;
+    private B _Inner = default!;
 }

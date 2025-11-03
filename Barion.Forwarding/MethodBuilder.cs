@@ -1,126 +1,147 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
 using System.Text;
-using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 
-namespace Barion.SourceGeneration; 
-public sealed class MethodBuilder {
+namespace Barion.SourceGeneration;
+
+public sealed class MethodBuilder(string name, string returnType)
+{
     private string Accessibility = "private";
-    private readonly string ReturnType = "void";
-    private readonly string Name;
+    private readonly string ReturnType = returnType;
+    private readonly string Name = name;
     private bool IsStatic = false;
     private bool IsVirtual = false;
     private bool IsOverride = false;
-    private readonly List<string> Parameters = new();
-    private readonly List<string> GenericParameters = new();
+    private readonly List<string> Parameters = [];
+    private readonly List<string> GenericParameters = [];
     private readonly StringBuilder MethodBodyBuilder = new();
 
-    public MethodBuilder(string name, string returnType) {
-        Name = name;
-        ReturnType = returnType;
-    }
-
-    public MethodBuilder(IMethodSymbol methodSymbol) 
-        : this(methodSymbol.Name, methodSymbol.GetReturnString()){
+    public MethodBuilder(IMethodSymbol methodSymbol)
+        : this(methodSymbol.Name, methodSymbol.GetReturnString())
+    {
         SetAccessibility(methodSymbol.DeclaredAccessibility);
-        if(methodSymbol.IsStatic) SetStatic();
+        if (methodSymbol.IsStatic) SetStatic();
         //if(methodSymbol.IsVirtual) SetVirtual(); // not a good idea to set it automatically
     }
 
-    public MethodBuilder SetStatic() {
+    public MethodBuilder SetStatic()
+    {
         IsStatic = true;
         return this;
     }
-    
-    public MethodBuilder SetVirtual() {
+
+    public MethodBuilder SetVirtual()
+    {
         IsVirtual = true;
         return this;
     }
-    
-    public MethodBuilder SetOverride() {
+
+    public MethodBuilder SetOverride()
+    {
         IsOverride = true;
         return this;
     }
 
-    public MethodBuilder SetAccessibility(Accessibility accessibility) {
+    public MethodBuilder SetAccessibility(Accessibility accessibility)
+    {
         Accessibility = accessibility.ToKeyword();
         return this;
     }
 
-    public MethodBuilder AddParameter(string type, string name) {
+    public MethodBuilder AddParameter(string type, string name)
+    {
         Parameters.Add($"{type} {name}");
         return this;
     }
-    
-    public MethodBuilder AddParameter(string type, string name, string defaultValue) {
+
+    public MethodBuilder AddParameter(string type, string name, string defaultValue)
+    {
         Parameters.Add($"{type} {name} = {defaultValue}");
         return this;
     }
 
-    public MethodBuilder AddParameter(IParameterSymbol parameterSymbol) {
-        if(parameterSymbol.HasExplicitDefaultValue) {
+    public MethodBuilder AddParameter(IParameterSymbol parameterSymbol)
+    {
+        if (parameterSymbol.HasExplicitDefaultValue)
+        {
             return AddParameter(parameterSymbol.Type.GetCodeString(), parameterSymbol.Name, parameterSymbol.ExplicitDefaultValue!.ToString()); //might not work always
         }
         return AddParameter(parameterSymbol.Type.GetCodeString(), parameterSymbol.Name);
     }
 
-    public MethodBuilder AddParameters(IEnumerable<IParameterSymbol> parameterSymbols) {
-        foreach(var parameterSymbol in parameterSymbols) {
+    public MethodBuilder AddParameters(IEnumerable<IParameterSymbol> parameterSymbols)
+    {
+        foreach (var parameterSymbol in parameterSymbols)
+        {
             AddParameter(parameterSymbol);
         }
         return this;
     }
 
-    public MethodBuilder AddGenericParameter(ITypeSymbol parameterSymbol) {
+    public MethodBuilder AddGenericParameter(ITypeSymbol parameterSymbol)
+    {
         GenericParameters.Add(parameterSymbol.ToDisplayString());
         return this;
     }
-    public MethodBuilder AddGenericParameters(IEnumerable<ITypeSymbol> parameterSymbols) {
-        foreach(var parameterSymbol in parameterSymbols) {
+    public MethodBuilder AddGenericParameters(IEnumerable<ITypeSymbol> parameterSymbols)
+    {
+        foreach (var parameterSymbol in parameterSymbols)
+        {
             AddGenericParameter(parameterSymbol);
         }
         return this;
     }
 
-    public MethodBuilder AddOperation(string statement) {
+    public MethodBuilder AddOperation(string statement)
+    {
         MethodBodyBuilder.AppendLine($"\t{statement};");
         return this;
     }
 
-    public MethodBuilder AddCall(IMethodSymbol methodSymbol, ISymbol from, IEnumerable<string> parameters) {
+    public MethodBuilder AddCall(IMethodSymbol methodSymbol, ISymbol from, IEnumerable<string> parameters)
+    {
         return AddOperation(GetCallString(methodSymbol, from, parameters));
     }
-    private static string GetCallString(IMethodSymbol methodSymbol, ISymbol from, IEnumerable<string> parameters) {
+    private static string GetCallString(IMethodSymbol methodSymbol, ISymbol from, IEnumerable<string> parameters)
+    {
         return $"{from.Name}.{methodSymbol.Name}({string.Join(", ", parameters)})";
     }
 
-    public string Return(string statement) {
-        MethodBodyBuilder.Append('\t');
+    public string Return(string statement)
+    {
+        MethodBodyBuilder.Append("    ");
         MethodBodyBuilder.Append("return ");
         MethodBodyBuilder.Append(statement);
         MethodBodyBuilder.AppendLine(";");
         return ToString();
     }
-    
-    public string ReturnCall(IMethodSymbol methodSymbol, ISymbol from, IEnumerable<string> parameters) {
+
+    public string ReturnCall(IMethodSymbol methodSymbol, ISymbol from, IEnumerable<string> parameters)
+    {
         return Return(GetCallString(methodSymbol, from, parameters));
     }
 
-    public override string ToString() {
+    public override string ToString()
+    {
         var builder = new StringBuilder();
         builder.Append(Accessibility);
-        if(IsOverride) {
+        if (IsOverride)
+        {
             builder.Append(" override");
-        } else {
-            if(IsStatic) builder.Append(" static");
-            if(IsVirtual) builder.Append(" virtual");
+        }
+        else
+        {
+            if (IsStatic) builder.Append(" static");
+            if (IsVirtual) builder.Append(" virtual");
         }
         builder.Append($" {ReturnType} {Name}");
-        if(GenericParameters.Count > 0) {
+        if (GenericParameters.Count > 0)
+        {
             builder.Append($"<{string.Join(", ", GenericParameters)}>");
         }
         builder.Append('(');
         builder.Append(string.Join(", ", Parameters));
-        builder.AppendLine("){");
+        builder.AppendLine(")\n{");
         builder.Append(MethodBodyBuilder.ToString());
         builder.Append("}");
         return builder.ToString();

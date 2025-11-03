@@ -1,30 +1,40 @@
-﻿namespace Barion.Forwarding;
+﻿using Microsoft.CodeAnalysis;
 
-//[Generator]
-//internal sealed class ForwardingAttributeSourceGenerator : ISourceGenerator {
-//    public void Initialize(GeneratorInitializationContext context) {}
-//    public void Execute(GeneratorExecutionContext context) {
-//        var @namespace = context.Compilation.AssemblyName;
+namespace Barion.Forwarding;
 
-//        context.AddSource("ForwardAttribute.g.cs", $$"""
-//                namespace {{@namespace}};
+[Generator]
+internal sealed class ForwardingAttributeSourceGenerator : IIncrementalGenerator
+{
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        context.RegisterPostInitializationOutput(static ctx =>
+        {
+            ctx.AddSource("ForwardingAttributes.g.cs", """
+            using System;
 
-//                [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
-//                public sealed class {{ForwardingHelper.FORWARD_ATTRIBUTE_NAME}} : Attribute
-//                {
-//                    //public string[] MemberNames { get; }
+            namespace Barion.Forwarding;
 
-//                    public {{ForwardingHelper.FORWARD_ATTRIBUTE_NAME}}(string memberNames, string sfds){
-//                        //MemberNames = memberNames;
-//                    }
-//                }
-//            """);
+            [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
+            internal sealed class ForwardingAttribute : Attribute { }
 
-//        context.AddSource("ForwardingAttribute.g.cs", $$"""
-//                namespace {{@namespace}};
+            [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
+            internal sealed class ForwardAttribute : Attribute
+            {
+                internal ForwardAttribute(params string[] memberNames) { }
+            }
 
-//                [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-//                public sealed class {{ForwardingHelper.FORWARDING_ATTRIBUTE_NAME}} : Attribute {}
-//            """);
-//    }
-//}
+            [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
+            internal sealed class ForwardMethodsAttribute : Attribute
+            {
+                internal ForwardMethodsAttribute(params string[] methodNames) { }
+            }
+
+            [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
+            internal sealed class ForwardPropertiesAttribute : Attribute
+            {
+                internal ForwardPropertiesAttribute(bool includeSetter, params string[] propertyNames) { }
+            }
+            """);
+        });
+    }
+}
